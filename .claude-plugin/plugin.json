@@ -7,15 +7,13 @@
     "url": "https://github.com/behroozazarkhalili"
   },
   "homepage": "https://github.com/behroozazarkhalili/copilot-plugin-cc",
+  "repository": "https://github.com/behroozazarkhalili/copilot-plugin-cc",
   "license": "Apache-2.0",
-  "commands": [
-    { "name": "review",              "file": "commands/review.md" },
-    { "name": "adversarial-review",  "file": "commands/adversarial-review.md" },
-    { "name": "rubber-duck",         "file": "commands/rubber-duck.md" },
-    { "name": "rescue",              "file": "commands/rescue.md" },
-    { "name": "status",              "file": "commands/status.md" },
-    { "name": "result",              "file": "commands/result.md" },
-    { "name": "cancel",              "file": "commands/cancel.md" },
-    { "name": "setup",               "file": "commands/setup.md" }
+  "keywords": [
+    "github",
+    "copilot",
+    "code-review",
+    "claude-code",
+    "plugin"
   ]
 }
