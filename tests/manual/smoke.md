@@ -18,3 +18,9 @@ These tests cover the slash commands, which are Claude Code prompts and can't be
 3. Expected output: "Installed adversarial-review.agent.md to ~/.copilot/agents/" followed by a harsh review
 4. Verify the file exists: `ls ~/.copilot/agents/adversarial-review.agent.md`
 5. Edit the file (add "extra harsh" to the charter), run again, verify the edit is honored (it was not overwritten)
+
+## /copilot:rubber-duck
+
+1. In any repo with a diff: `/copilot:rubber-duck`
+2. Expected: a critique back from the rubber-duck agent
+3. Compare to `/copilot:review` output on the same diff — note differences in tone and findings
