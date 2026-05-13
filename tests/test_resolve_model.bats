@@ -54,10 +54,10 @@ get_model() {
       claude-sonnet-4.6) echo ok; exit 0;;
     esac
   '
-  run "$SCRIPTS_DIR/resolve-model.sh" sonnet
+  run --separate-stderr "$SCRIPTS_DIR/resolve-model.sh" sonnet
   [ "$status" -eq 0 ]
-  [[ "$output" == *"claude-sonnet-4.6"* ]]
-  [[ "$output" == *"4.7 not available"* ]]
+  [ "$output" = "claude-sonnet-4.6" ]
+  [[ "$stderr" == *"4.7 not available"* ]]
 }
 
 @test "alias chain exhausts → exit 65 with clear error" {

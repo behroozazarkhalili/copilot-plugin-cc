@@ -53,11 +53,12 @@ resolve_chain() {
   for candidate in "${chain[@]}"; do
     if probe_model "$candidate"; then
       if [ "$candidate" != "$primary" ]; then
-        # Non-silent substitution per spec
-        echo "Resolved --model $ALIAS → $candidate ($primary not available on your plan)"
-      else
-        echo "$candidate"
+        # Human-readable substitution diagnostic to stderr;
+        # only the resolved model id goes to stdout so callers can
+        # cleanly capture it with $(...) and pass it as --model.
+        echo "Resolved --model $ALIAS → $candidate ($primary not available on your plan)" >&2
       fi
+      echo "$candidate"
       return 0
     fi
   done
