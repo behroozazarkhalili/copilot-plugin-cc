@@ -1,0 +1,22 @@
+{
+  "name": "copilot-plugin-cc",
+  "description": "GitHub Copilot CLI inside Claude Code. Eight slash commands for code review and cloud-agent delegation.",
+  "owner": {
+    "name": "Ermia Azarkhalili",
+    "url": "https://github.com/behroozazarkhalili"
+  },
+  "plugins": [
+    {
+      "name": "copilot",
+      "description": "GitHub Copilot CLI as Claude Code slash commands. Includes /copilot:review, /copilot:adversarial-review, /copilot:rubber-duck, /copilot:rescue, /copilot:status, /copilot:result, /copilot:cancel, /copilot:setup. Pro and Pro+ aware model alias resolver with graceful fallback chains.",
+      "source": "./",
+      "version": "0.1.0",
+      "strict": false
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/behroozazarkhalili/copilot-plugin-cc"
+  }
+}
