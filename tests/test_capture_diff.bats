@@ -59,9 +59,9 @@ teardown() {
 }
 
 @test "outside git repo → exit 67" {
-  mkdir -p "$TEST_TMP/notarepo"
-  cd "$TEST_TMP/notarepo"
-  run "$SCRIPTS_DIR/capture-diff.sh"
+  OUTSIDE_REPO="$(mktemp -d -p /tmp)"
+  run bash -c "cd '$OUTSIDE_REPO' && '$SCRIPTS_DIR/capture-diff.sh'"
+  rm -rf "$OUTSIDE_REPO"
   [ "$status" -eq 67 ]
   [[ "$output" == *"Not in a git repository"* ]] || [[ "$output" == *"not a git repository"* ]]
 }
