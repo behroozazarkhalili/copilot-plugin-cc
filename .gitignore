@@ -1,0 +1,16 @@
+# editor
+*.swp
+*.swo
+.DS_Store
+
+# test artifacts
+/tests/tmp/
+/tests/.bats/
+
+# local state
+*.log
+/tmp/
+
+# IDE
+.vscode/
+.idea/
