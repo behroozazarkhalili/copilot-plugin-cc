@@ -142,7 +142,16 @@ Verifies the install and authentication state. Runs:
 
 ## Model resolution
 
-Default behavior: no `--model` flag means Copilot's Auto picker chooses.
+### Defaults per command category
+
+| Commands | Default when `--model` is omitted |
+|---|---|
+| `/copilot:review`, `/copilot:adversarial-review`, `/copilot:rubber-duck` | `gpt-5.2-codex` (GitHub's documented best-for-review model). Falls through the `codex` chain if not on plan. |
+| `/copilot:rescue` | Auto (omit `--model`) — let Copilot pick based on task. |
+
+Rationale: review work has a documented optimal model; autonomous task execution does not. Pinning the review default makes outputs reproducible across sessions; leaving rescue on Auto keeps the cloud agent's adaptivity.
+
+### Alias map (Pro and Pro+ aware)
 
 When `--model` is passed, the value is either a full model id (passes through unchanged) or an alias resolved by `scripts/resolve-model.sh`:
 
@@ -154,10 +163,27 @@ When `--model` is passed, the value is either a full model id (passes through un
 | `codex` | `gpt-5.2-codex` | `gpt-5.1-codex` |
 | `gpt` | `gpt-5.4` | `gpt-5.2` → `gpt-5.1` |
 | `gpt-mini` | `gpt-5.4-mini` | `gpt-5-mini` |
+| `gpt-4` | `gpt-4.1` | (no fallback) |
 | `gemini` | `gemini-4` | `gemini-3.1-pro` → `gemini-3-pro-preview` |
 | `auto` | (omit `--model` flag) | — |
 
-`scripts/resolve-model.sh` probes `copilot --model help` once per session and picks the first available entry in the fallback chain. The plugin never silently substitutes — if `sonnet` resolves to `claude-sonnet-4.6` because 4.7 isn't on the user's plan, the command prints `Resolved --model sonnet → claude-sonnet-4.6 (4.7 not available on your plan)` before running.
+### Pro vs Pro+ behavior
+
+Pro+ subscribers typically have all aliases resolvable on the primary target. Pro subscribers usually see a narrower available set — Claude Sonnet/Opus and Gemini frequently require Pro+. The plugin handles both:
+
+  Pro+ user → most aliases hit primary target. `sonnet` → `claude-sonnet-4.7`, `opus` → `claude-opus-4.7`, etc.
+
+  Pro user → premium aliases fall through their chain and then error out cleanly. `sonnet` exhausts {4.7, 4.6, 4.5} and surfaces: `None of {claude-sonnet-4.7, claude-sonnet-4.6, claude-sonnet-4.5} are available on your plan. Run /model in copilot to see your enabled models, or upgrade to Pro+ at github.com/settings/copilot.`
+
+  Same plugin code, same alias map — the resolver script discovers the user's effective plan at first call by probing each candidate. Available models are cached at `/tmp/copilot-models-<sessionid>.txt` for the duration of the session.
+
+### Discovery mechanics
+
+`scripts/resolve-model.sh` does not parse `copilot --model help` output (the help text no longer enumerates models as of CLI 1.0.47). Instead it probes each candidate from the fallback chain via `copilot -p "ok" --silent --model <candidate>`, treats `not available` errors as a signal to advance, and pins the first available variant. The probe cost is ~3 seconds per model on first invocation; cached results make subsequent calls instant.
+
+### Non-silent substitution
+
+The plugin never silently substitutes a different model than what the user asked for. When `sonnet` resolves to a fallback (e.g. `claude-sonnet-4.6` because 4.7 is not enabled), the command prints `Resolved --model sonnet → claude-sonnet-4.6 (4.7 not available on your plan)` before running. When the chain exhausts entirely, the command errors and exits — it never auto-promotes to a different alias family.
 
 ## Plugin layout
 
@@ -265,12 +291,14 @@ No end-to-end test against the live Copilot API. The plugin's job is to construc
 
 ## Open risks
 
-  - Sonnet 4.7 is unconfirmed in public GitHub Copilot changelogs as of 2026-05-13. The alias `sonnet` may resolve to `claude-sonnet-4.6` for most users until 4.7 ships broadly.
-  - Gemini 4 is unconfirmed in public docs as of 2026-05-13 (latest Gemini on Copilot CLI is `gemini-3.1-pro`). Same fallback handling applies.
+  - Sonnet 4.7 is unconfirmed in public GitHub Copilot changelogs as of 2026-05-13. The alias `sonnet` may resolve to `claude-sonnet-4.6` for Pro+ users with 4.7 still rolling out, and is **not available at all** on Pro plans.
+  - Gemini 4 is unconfirmed in public docs as of 2026-05-13. The alias `gemini` may resolve to `gemini-3.1-pro` for Pro+ users with Gemini access. Gemini is **not available** on Pro plans.
+  - Author's own Copilot Pro plan currently has only 5 models enabled (`claude-haiku-4.5`, `gpt-5.2`, `gpt-5.2-codex`, `gpt-5-mini`, `gpt-4.1`), confirmed by direct probe on 2026-05-13. This is the canonical "Pro" plan shape the plugin must handle gracefully. Pro+ shape is inferred from GitHub docs (full Claude + GPT + Gemini coverage).
   - The exact verb for cloud-job status/result/cancel (`copilot job status`, `copilot delegate status`, or other) needs verification during implementation. The spec uses `copilot job <verb>` as a placeholder; will pin to actual verbs in code.
-  - Copilot CLI's `--model` flag list is not programmatically queryable today (github/copilot-cli#700 open). The fallback probe relies on parsing `copilot --model help` output, whose format may change. Tests pin against fixture output.
+  - Copilot CLI's `--model` flag list is not programmatically queryable today (github/copilot-cli#700 open). As of CLI 1.0.47, `copilot help` no longer enumerates models in `--model` description. The resolver script probes each candidate via test invocation rather than parsing help output. Cost: ~3 seconds per probed alias on first call, cached thereafter.
   - `--silent -p` mode was added in the Jan 2026 changelog. The plugin requires Copilot CLI >= 1.0.10 (rough; pinned to actual minimum in README during implementation).
   - The rubber-duck agent's exact behavior around model selection ("uses a complementary model") may differ from the spec's interpretation. The `--model` flag's interaction with rubber-duck is documented in implementation tests, not assumed.
+  - `/copilot:rescue` and the cloud-agent commands (`status`, `result`, `cancel`) require GitHub Copilot cloud-agent access, which historically gates on Pro+ or higher. The plugin surfaces a clear error if invoked on a plan that lacks cloud-agent entitlement.
 
 ## What this design does NOT decide
 
