@@ -114,6 +114,63 @@ Available models per alias:
 
 With no arguments, that reviews **staged + unstaged** changes in the current git repo using the default reviewer model (`gpt-5.2-codex`). You should see a streamed markdown review back in the transcript.
 
+## Command reference at a glance
+
+The commands fall into two families. **Target-takers** review or critique a diff/hypothesis — they share a unified target+model grammar. **Verb-takers** address a specific job or perform a verification — they take either a free-form prompt or a job id.
+
+| Command | Family | Required arg | Optional flags | Target forms |
+|---|---|---|---|---|
+| `/copilot:review` | target-taker | — | `--model <alias>` | empty / `--staged` / `--branch` / `<ref>..<ref>` / `pr N` |
+| `/copilot:adversarial-review` | target-taker | — | `--model <alias>` | same as `:review` |
+| `/copilot:rubber-duck` | target-taker | hypothesis text (quoted) | `--model <alias>` | n/a |
+| `/copilot:rescue` | verb-taker | task text (quoted, free-form) | `--model <alias>` | n/a |
+| `/copilot:status` | verb-taker | — | `--all`, `--json` | n/a |
+| `/copilot:result` | verb-taker | job id (or unique prefix) | — | n/a |
+| `/copilot:cancel` | verb-taker | job id (or unique prefix) | — | n/a |
+| `/copilot:setup` | verb-taker | — | — | n/a |
+
+### Target forms (for the three target-takers)
+
+| Form | What it captures |
+|---|---|
+| *(empty)* | Staged + unstaged changes in cwd |
+| `--staged` | Staged changes only |
+| `--branch` | Current branch vs `main` (uses `git merge-base`) |
+| `HEAD~5..HEAD`, `feature..main`, etc. | Arbitrary git ref range |
+| `pr 123` | Pull request #123 (requires `gh` CLI on PATH) |
+
+### Model-alias quick map
+
+`--model <alias>` accepts either a literal model id (e.g. `gpt-5.2-codex`) or an alias. Aliases use probe-based fallback chains — if the first candidate isn't entitled on your plan, the next one is tried.
+
+| Alias | Resolves to | Pro | Pro+ |
+|---|---|---|---|
+| `codex` (default for review) | `gpt-5.2-codex` | ✓ | ✓ |
+| `gpt` | `gpt-5.4` → `gpt-5.2` → `gpt-5.1` | partial | ✓ |
+| `gpt-mini` | `gpt-5.4-mini` → `gpt-5-mini` | partial | ✓ |
+| `gpt-4` | `gpt-4.1` | ✓ | ✓ |
+| `haiku` | `claude-haiku-4.5` | ✓ | ✓ |
+| `sonnet` | `claude-sonnet-4.7` → `4.6` → `4.5` | ✗ | ✓ |
+| `opus` | `claude-opus-4.7` → `4.6` → `4.5` | ✗ | ✓ |
+| `gemini` | `gemini-4` → `gemini-3.1-pro` → `gemini-3-pro-preview` | ✗ | varies |
+| `auto` (or flag omitted) | (Copilot picks per agent profile) | ✓ | ✓ |
+
+Substitution diagnostic: when a fallback occurs (e.g. `--model sonnet` lands on `4.6` instead of `4.7`), the resolver prints a one-line `Resolved --model sonnet → claude-sonnet-4.6 (claude-sonnet-4.7 not available on your plan)` message to **stderr**; the clean model id goes to stdout so callers can capture it with `$(...)`.
+
+### Exit codes from supporting scripts
+
+| Script | Code | Meaning |
+|---|---|---|
+| `resolve-model.sh` | 0 | Resolved id printed on stdout |
+| | 64 | Unknown alias / usage error |
+| | 65 | Alias chain exhausted on your plan |
+| `capture-diff.sh` | 0 | Diff captured on stdout |
+| | 66 | No changes for the requested target |
+| | 67 | Not in a git repo |
+| | 68 | Invalid target form |
+
+These codes are how command playbooks recognize failure modes and surface a clear error instead of running Copilot on bogus input.
+
 ## Commands — usage with examples
 
 Every command's full behavior lives in `commands/<name>.md`. Below are the practical recipes.
@@ -211,21 +268,7 @@ Marks the job as `cancelled` in the local TSV. **Server-side cancellation curren
 
 ## Model aliases
 
-The `--model` flag accepts either a full model id or one of these aliases:
-
-| Alias | Resolves to | Pro plan? | Pro+ plan? |
-|---|---|---|---|
-| `auto` (default omit) | (Copilot picks) | ✓ | ✓ |
-| `codex` | `gpt-5.2-codex` | ✓ | ✓ |
-| `gpt` | `gpt-5.4` → `gpt-5.2` → `gpt-5.1` | partial | ✓ |
-| `gpt-mini` | `gpt-5.4-mini` → `gpt-5-mini` | partial | ✓ |
-| `gpt-4` | `gpt-4.1` | ✓ | ✓ |
-| `haiku` | `claude-haiku-4.5` | ✓ | ✓ |
-| `sonnet` | `claude-sonnet-4.7` → `4.6` → `4.5` | ✗ | ✓ |
-| `opus` | `claude-opus-4.7` → `4.6` → `4.5` | ✗ | ✓ |
-| `gemini` | `gemini-4` → `gemini-3.1-pro` → `gemini-3-pro-preview` | ✗ | varies (policy) |
-
-The plugin probes each candidate on the user's plan and yields the first available. Non-silent substitution: if `sonnet` lands on `4.6` instead of `4.7`, the command prints the substitution before running.
+See [Model-alias quick map](#model-alias-quick-map) in the Command reference section above — full alias table, Pro/Pro+ entitlement column, fallback-chain definitions, and the stderr-vs-stdout substitution-diagnostic contract.
 
 ## Multi-account auth (gh + Copilot can use different GitHub accounts)
 
