@@ -32,7 +32,7 @@ Run a Copilot code review on a diff target.
    "${CLAUDE_PLUGIN_ROOT}/scripts/resolve-model.sh" X
    ```
    If the script exits 65 (chain exhausted), surface its stderr to the user and stop.
-   If no `--model` was passed, default to `codex` (per spec: gpt-5.2-codex is GitHub's documented best-for-review).
+   If no `--model` was passed, default to `codex` (which resolves to `gpt-5.3-codex` on plans with access, falling back to `gpt-5.2-codex` until that model's 2026-06-01 sunset).
 5. Build the copilot invocation:
    ```bash
    if [ -n "$RESOLVED_MODEL" ]; then

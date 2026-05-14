@@ -8,7 +8,7 @@ These tests cover the slash commands, which are Claude Code prompts and can't be
 2. Make a trivial edit so there's a diff
 3. In Claude Code: `/copilot:review`
 4. Expected: a markdown code review streams back
-5. Then: `/copilot:review --model codex` — should explicitly resolve to gpt-5.2-codex
+5. Then: `/copilot:review --model codex` — should explicitly resolve to gpt-5.3-codex (or gpt-5.2-codex on accounts where 5.3 isn't entitled)
 6. Then in a repo with NO diff: `/copilot:review` — should say "No changes to review"
 
 ## /copilot:adversarial-review

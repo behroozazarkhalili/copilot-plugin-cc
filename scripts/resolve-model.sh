@@ -18,8 +18,8 @@ Aliases (each with a fallback chain):
   sonnet    claude-sonnet-4.7 → 4.6 → 4.5
   opus      claude-opus-4.7 → 4.6 → 4.5
   haiku     claude-haiku-4.5
-  codex     gpt-5.2-codex → gpt-5.1-codex
-  gpt       gpt-5.4 → gpt-5.2 → gpt-5.1
+  codex     gpt-5.3-codex → gpt-5.2-codex   (5.2-codex sunsets 2026-06-01)
+  gpt       gpt-5.2
   gpt-mini  gpt-5.4-mini → gpt-5-mini
   gpt-4     gpt-4.1
   gemini    gemini-4 → gemini-3.1-pro → gemini-3-pro-preview
@@ -75,8 +75,8 @@ case "$ALIAS" in
   sonnet)   resolve_chain claude-sonnet-4.7 claude-sonnet-4.6 claude-sonnet-4.5;;
   opus)     resolve_chain claude-opus-4.7 claude-opus-4.6 claude-opus-4.5;;
   haiku)    resolve_chain claude-haiku-4.5;;
-  codex)    resolve_chain gpt-5.2-codex gpt-5.1-codex;;
-  gpt)      resolve_chain gpt-5.4 gpt-5.2 gpt-5.1;;
+  codex)    resolve_chain gpt-5.3-codex gpt-5.2-codex;;
+  gpt)      resolve_chain gpt-5.2;;
   gpt-mini) resolve_chain gpt-5.4-mini gpt-5-mini;;
   gpt-4)    resolve_chain gpt-4.1;;
   gemini)   resolve_chain gemini-4 gemini-3.1-pro gemini-3-pro-preview;;

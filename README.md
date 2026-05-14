@@ -18,7 +18,7 @@ GitHub Copilot CLI inside Claude Code. Eight slash commands.
 - Claude Code (current version)
 - GitHub Copilot CLI ≥ 1.0.10 — install via `npm install -g @github/copilot`
 - A GitHub Copilot subscription:
-  - **Pro** is sufficient for `/copilot:review` and `/copilot:adversarial-review` if you accept the limited model set (typically: gpt-5.2, gpt-5.2-codex, gpt-5-mini, gpt-4.1, claude-haiku-4.5).
+  - **Pro** is sufficient for `/copilot:review` and `/copilot:adversarial-review`. Empirically-verified Pro model set (May 2026): `gpt-5.3-codex`, `gpt-5.2-codex` (sunsetting 2026-06-01), `gpt-5.2`, `gpt-5.4-mini`, `gpt-5-mini`, `gpt-4.1`, `claude-haiku-4.5`.
   - **Pro+** unlocks Claude Sonnet/Opus, Gemini, and the cloud-agent commands (`/copilot:rescue`, `/copilot:status`, `/copilot:result`, `/copilot:cancel`).
 - Optional: `gh` CLI for the `pr <N>` target form
 - Optional: `bats-core` for running the test suite
@@ -98,8 +98,8 @@ Available models per alias:
   sonnet     → UNAVAILABLE (Pro+ required)
   opus       → UNAVAILABLE (Pro+ required)
   haiku      → claude-haiku-4.5
-  codex      → gpt-5.2-codex
-  gpt        → gpt-5.2 (substituted from gpt-5.4)
+  codex      → gpt-5.3-codex
+  gpt        → gpt-5.2
   gpt-mini   → gpt-5.4-mini
   gpt-4      → gpt-4.1
   gemini     → UNAVAILABLE (not on Pro)
@@ -112,7 +112,7 @@ Available models per alias:
 /copilot:review
 ```
 
-With no arguments, that reviews **staged + unstaged** changes in the current git repo using the default reviewer model (`gpt-5.2-codex`). You should see a streamed markdown review back in the transcript.
+With no arguments, that reviews **staged + unstaged** changes in the current git repo using the default reviewer model (`gpt-5.3-codex`, falling back to `gpt-5.2-codex` until that model's 2026-06-01 sunset). You should see a streamed markdown review back in the transcript.
 
 ## Command reference at a glance
 
@@ -141,19 +141,21 @@ The commands fall into two families. **Target-takers** review or critique a diff
 
 ### Model-alias quick map
 
-`--model <alias>` accepts either a literal model id (e.g. `gpt-5.2-codex`) or an alias. Aliases use probe-based fallback chains — if the first candidate isn't entitled on your plan, the next one is tried.
+`--model <alias>` accepts either a literal model id (e.g. `gpt-5.3-codex`) or an alias. Aliases use probe-based fallback chains — if the first candidate isn't entitled on your plan, the next one is tried.
 
 | Alias | Resolves to | Pro | Pro+ |
 |---|---|---|---|
-| `codex` (default for review) | `gpt-5.2-codex` | ✓ | ✓ |
-| `gpt` | `gpt-5.4` → `gpt-5.2` → `gpt-5.1` | partial | ✓ |
-| `gpt-mini` | `gpt-5.4-mini` → `gpt-5-mini` | partial | ✓ |
+| `codex` (default for review) | `gpt-5.3-codex` → `gpt-5.2-codex` | ✓ | ✓ |
+| `gpt` | `gpt-5.2` | ✓ | ✓ |
+| `gpt-mini` | `gpt-5.4-mini` → `gpt-5-mini` | ✓ | ✓ |
 | `gpt-4` | `gpt-4.1` | ✓ | ✓ |
 | `haiku` | `claude-haiku-4.5` | ✓ | ✓ |
 | `sonnet` | `claude-sonnet-4.7` → `4.6` → `4.5` | ✗ | ✓ |
 | `opus` | `claude-opus-4.7` → `4.6` → `4.5` | ✗ | ✓ |
 | `gemini` | `gemini-4` → `gemini-3.1-pro` → `gemini-3-pro-preview` | ✗ | varies |
 | `auto` (or flag omitted) | (Copilot picks per agent profile) | ✓ | ✓ |
+
+**Sunset note:** `gpt-5.2-codex` is being retired by GitHub on **2026-06-01**. The `codex` alias prepends `gpt-5.3-codex` so users on Pro/Pro+ get the new model by default; the `gpt-5.2-codex` fallback remains in the chain only as a safety net until the sunset date.
 
 Substitution diagnostic: when a fallback occurs (e.g. `--model sonnet` lands on `4.6` instead of `4.7`), the resolver prints a one-line `Resolved --model sonnet → claude-sonnet-4.6 (claude-sonnet-4.7 not available on your plan)` message to **stderr**; the clean model id goes to stdout so callers can capture it with `$(...)`.
 
@@ -198,7 +200,7 @@ Targets:
 Override the reviewer LLM:
 
 ```
-/copilot:review --model codex         # gpt-5.2-codex (default — best for code review)
+/copilot:review --model codex         # gpt-5.3-codex (default — best for code review)
 /copilot:review --model haiku         # claude-haiku-4.5 (Pro)
 /copilot:review --branch --model opus # Claude Opus 4.7 (Pro+)
 /copilot:review --model gpt-4         # gpt-4.1 fallback
