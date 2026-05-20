@@ -64,15 +64,34 @@ copilot -p "say hi" --silent
 
 ### 3. Install the plugin into Claude Code
 
-Clone or download this repo to `~/Downloads/copilot-plugin-cc` (or anywhere). Then from inside a Claude Code session:
+From inside a Claude Code session:
 
 ```
-/plugin marketplace add ~/Downloads/copilot-plugin-cc
+/plugin marketplace add behroozazarkhalili/copilot-plugin-cc
 /plugin install copilot
 /reload-plugins
 ```
 
-All eight `/copilot:*` commands should now appear when you start typing `/copilot:` in the prompt.
+That clones the marketplace from <https://github.com/behroozazarkhalili/copilot-plugin-cc> into `~/.claude/plugins/marketplaces/copilot-plugin-cc/` and installs the plugin into `~/.claude/plugins/cache/copilot-plugin-cc/copilot/<version>/`. All eight `/copilot:*` commands should now appear when you start typing `/copilot:` in the prompt.
+
+**Updating later:**
+
+```
+/plugin marketplace update copilot-plugin-cc
+/plugin install copilot@copilot-plugin-cc
+```
+
+The `marketplace update` step does a `git pull` in the marketplace clone; the second step refreshes the installed copy from the freshly-pulled source.
+
+**Contributing / dev install:** if you want to hack on the plugin locally, clone the repo somewhere and add it as a directory-source marketplace alongside the GitHub one (the two will coexist):
+
+```
+git clone https://github.com/behroozazarkhalili/copilot-plugin-cc ~/dev/copilot-plugin-cc
+/plugin marketplace add ~/dev/copilot-plugin-cc
+/plugin install copilot@copilot-plugin-cc-local   # or whatever name the local marketplace registers under
+```
+
+Or skip the marketplace registration and just edit files directly inside `~/.claude/plugins/marketplaces/copilot-plugin-cc/` (the GitHub clone) — but those edits will be wiped on the next `/plugin marketplace update`.
 
 ### 4. Verify the install
 
