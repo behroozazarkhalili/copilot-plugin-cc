@@ -20,7 +20,7 @@ Same input grammar as `/copilot:review`, but uses the adversarial agent profile.
    ```
    Never overwrite an existing file — the user may have edited it.
 3. Capture diff via `capture-diff.sh` (same as /copilot:review).
-4. Resolve model (same default: codex).
+4. Resolve model (same default: sol, i.e. `gpt-5.6-sol`).
 5. Invoke `copilot --agent=adversarial-review --model "$RESOLVED" -p --silent < diff`.
 6. Stream output back.
 

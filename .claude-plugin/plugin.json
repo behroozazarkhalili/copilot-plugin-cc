@@ -1,7 +1,7 @@
 {
   "name": "copilot",
   "version": "0.1.0",
-  "description": "GitHub Copilot CLI inside Claude Code — review (code-review, adversarial, rubber-duck), rescue (cloud-agent delegation), job management, and setup. 8 commands.",
+  "description": "GitHub Copilot CLI inside Claude Code — review (code-review, adversarial, scientific, rubber-duck), rescue (cloud-agent delegation), job management, and setup. 9 commands.",
   "author": {
     "name": "Ermia Azarkhalili",
     "url": "https://github.com/behroozazarkhalili"

@@ -19,6 +19,8 @@ Aliases (each with a fallback chain):
   opus      claude-opus-4.7 → 4.6 → 4.5
   haiku     claude-haiku-4.5
   codex     gpt-5.3-codex → gpt-5.2-codex   (5.2-codex sunsets 2026-06-01)
+  sol       gpt-5.6-sol     (default for code review)
+  terra     gpt-5.6-terra   (default for scientific review)
   gpt       gpt-5.2
   gpt-mini  gpt-5.4-mini → gpt-5-mini
   gpt-4     gpt-4.1
@@ -76,6 +78,8 @@ case "$ALIAS" in
   opus)     resolve_chain claude-opus-4.7 claude-opus-4.6 claude-opus-4.5;;
   haiku)    resolve_chain claude-haiku-4.5;;
   codex)    resolve_chain gpt-5.3-codex gpt-5.2-codex;;
+  sol)      resolve_chain gpt-5.6-sol;;
+  terra)    resolve_chain gpt-5.6-terra;;
   gpt)      resolve_chain gpt-5.2;;
   gpt-mini) resolve_chain gpt-5.4-mini gpt-5-mini;;
   gpt-4)    resolve_chain gpt-4.1;;
